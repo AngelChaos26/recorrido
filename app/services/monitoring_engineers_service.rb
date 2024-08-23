@@ -8,15 +8,22 @@ class MonitoringEngineersService
 
         return if company.nil? || company.services.empty?
         
-        services_by_day = company.services.group_by { |service| service.date_format }
-        schedules_by_week_number = company.schedules.group_by { |schedules| schedules.week_number }
-        
+        # Define the services as a hash with the dates as keys
+            # Example: { ""08-19-2024": [], "08-20-2024: [] ... }
+        services_by_day = company.services_by_day
+        # Redefine the services as a hash with the dates and hours as keys
+            # Example: { "08-19-2024": [{ "17:00": [], "18:00": [] ...}], "08-20-2024: [{ "17:00": [], "18:00": [] }] ... }
         services_by_day.each do |key, values|
             services_by_day[key] = values.group_by { |service| service.hour_format }
         end
+        # Define the schedules as a hash with the week_number as key
+        schedules_by_week_number = company.schedules_by_week_number
         
-        service_date = Date.strptime(date, "%m-%d-%Y")
+        # We set the date given to the start of the week
+        service_date = Date.strptime(date, "%m-%d-%Y").beginning_of_week
         
+        # This number matchs with the wday given by the class Date, the same numbers we use for 
+        #   saving the week_number in Company::Schedule
         (0..6).map do |wday|
             week_day = service_date + wday
             week_day_format = week_day.strftime("%m-%d-%Y")
@@ -24,15 +31,21 @@ class MonitoringEngineersService
             
             next if services_by_shift.nil?
             
-            hours = hours_range(schedules_by_week_number[week_day.wday][0])
+            # Returns the range of hours provided by the schedule
+            hours = schedules_by_week_number[week_day.wday][0].hours_range
             
+            # Checks for a valid hour service in case the first hours have no engineers associated to them
             start_index = hours.each_with_index do |value, index|
                              break index if services_by_shift[value].present? && services_by_shift[value][0].service_engineers.present?
                           end
-                          
+            
+            # If start_index is nil, it means could be services records , but without engineers associated, 
+            #   we finish the service
             next if start_index.blank?
             
             results = { results: [], min_shift: 0 }
+            
+            binding.pry if week_day_format == "08-20-2024"
             
             # Initialize the recursion, we start with the values in the hour found, we save the shifts and service's ids
             services_by_shift[hours[start_index]][0].engineer_ids.each do |id|
@@ -40,10 +53,11 @@ class MonitoringEngineersService
                                                { id => [services_by_shift[hours[start_index]][0].id], "shifts" => 1 }, results)
             end
             
+            # We save the combinations with the minimum of shifts
             hours_to_engineers(results[:results], results[:min_shift], week_day_format)
         end
         
-        assign_engineers_to_hours
+        day_shifts
     end
     
     def recursion_monitoring_engineers(hours, index, previous_id, data, monitoring, results)
@@ -76,8 +90,14 @@ class MonitoringEngineersService
         results
     end
     
-    def assign_engineers_to_hours
-        shift_combination
+    def assign_engineers_to_hours(company, date)
+        # We get all the service_engineer's ids grouped by engineer_ids, 
+        #   giving us the best option per service
+        service_engineer_ids = reduce_engineer_combinations(shift_combination)
+        # We get the service's ids associated to the company into the range of the date, we are going to
+        #   set the engineer(engineer_id) to nil of those services not associated to the current Service::Engineer
+        services_ids = company.services.by_range(date.beginning_of_day, date.end_of_week.end_of_day).pluck(:id)
+        service_engineers = Service::Engineer.where(id: service_engineer_ids.values.flatten)
     end
     
     def shift_combination
@@ -118,18 +138,23 @@ class MonitoringEngineersService
                                   .map { |data| data.except("shifts") }
     end
     
-    def hours_range(schedule)
-        total_minutes = ((schedule.end_time_format) - schedule.start_time) / 60
-            
-        (0..total_minutes - 60).step(60).map { |minutes| (schedule.start_time + minutes * 60).strftime("%H:%M") }
-    end
-    
     def engineer_hours
         @engineer_hours ||= Engineer.all.pluck(:id).map { |id| [id, 0] }.to_h
     end
     
     def day_shifts
         @day_shifts ||= {}
+    end
+    
+    def reduce_engineer_combinations(combinations)
+        combinations.reduce({}) do |acc, hash|
+            hash.each do |key, value|
+                acc[key] ||= []
+                acc[key] += value
+            end
+            
+            acc
+        end
     end
     
     def hash_deep_copy(o)
