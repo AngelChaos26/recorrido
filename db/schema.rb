@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_19_234932) do
+ActiveRecord::Schema[7.1].define(version: 2024_08_23_155903) do
   create_table "companies", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -48,11 +48,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_19_234932) do
     t.integer "company_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "engineer_id"
     t.index ["company_id"], name: "index_services_on_company_id"
+    t.index ["engineer_id"], name: "index_services_on_engineer_id"
   end
 
   add_foreign_key "company_schedules", "companies"
   add_foreign_key "service_engineers", "engineers"
   add_foreign_key "service_engineers", "services"
   add_foreign_key "services", "companies"
+  add_foreign_key "services", "engineers"
 end
