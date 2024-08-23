@@ -1,3 +1,8 @@
-// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-import "@hotwired/turbo-rails"
-import "controllers"
+// app/javascript/application.js
+import { Application } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js";
+import { SelectOptionController } from "./controllers/select_option_controller.js";
+import { CheckboxOptionController } from "./controllers/checkbox_option_controller.js";
+
+const application = Application.start();
+application.register("select-option", SelectOptionController);
+application.register("checkbox-option", CheckboxOptionController);
