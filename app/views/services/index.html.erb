@@ -4,7 +4,8 @@
     <% @companies.each do |company| %>
       <option value="<%= company.id %>" data-action="change->select-option#renderContentById" 
                                         data-ajax-url="<%= services_path %>"
-                                        data-ajax-params='{"company_id": "<%= company.id %>"}'>
+                                        data-ajax-params='{"company_id": "<%= company.id %>"}'
+                                        <%= "selected" if company.id == @company.id %>>
         <%= company.name %>
       </option>
     <% end %>
