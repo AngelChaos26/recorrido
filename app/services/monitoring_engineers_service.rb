@@ -45,22 +45,22 @@ class MonitoringEngineersService
             
             results = { results: [], min_shift: 0 }
             
-            binding.pry if week_day_format == "08-20-2024"
-            
             # Initialize the recursion, we start with the values in the hour found, we save the shifts and service's ids
-            services_by_shift[hours[start_index]][0].engineer_ids.each do |id|
-                recursion_monitoring_engineers(hours, start_index + 1, id, services_by_shift, 
-                                               { id => [services_by_shift[hours[start_index]][0].id], "shifts" => 1 }, results)
+            services_by_shift[hours[start_index]][0].service_engineers.each do |service_engineer|
+                engineer_id = service_engineer.engineer_id
+                recursion_monitoring_engineers(hours, start_index + 1, engineer_id, services_by_shift, 
+                                               { engineer_id => [service_engineer.id], "shifts" => 1 }, results)
             end
             
             # We save the combinations with the minimum of shifts
             hours_to_engineers(results[:results], results[:min_shift], week_day_format)
         end
         
-        day_shifts
+        assign_engineers_to_hours(company, service_date)
     end
     
     def recursion_monitoring_engineers(hours, index, previous_id, data, monitoring, results)
+        # If the hours are finishid, we save the information if this is smaller that the current min_shift
         if hours[index].nil?
             results[:results] << monitoring if results[:min_shift].zero? || monitoring["shifts"] <= results[:min_shift]
             results[:min_shift] = monitoring["shifts"] if results[:min_shift].zero? || monitoring["shifts"] < results[:min_shift]
@@ -68,19 +68,24 @@ class MonitoringEngineersService
             return results
         end
         
+        # If no service_engineers associated, then we move to the next hour witout shift, as we can find the same
+        #   engineer later
         if data[hours[index]].nil? || data[hours[index]][0].service_engineers.empty?
             recursion_monitoring_engineers(hours, index + 1, previous_id, data, monitoring, results)
         else
             service = data[hours[index]][0]
             
-            service.engineer_ids.each do |id|
+            service.service_engineers.each do |service_engineer|
                 copy_monitoring = hash_deep_copy(monitoring)
+                # Checking the engineer_id
+                id = service_engineer.engineer_id
                 
+                # If its the same engineer that in the previous hour, we do not increase the shift, otherwise we increase it
                 if previous_id == id
-                    copy_monitoring[id] << service.id
+                    copy_monitoring[id] << service_engineer.id
                 else
                     copy_monitoring["shifts"] += 1
-                    copy_monitoring[id].nil? ? copy_monitoring[id] = [service.id] : copy_monitoring[id] << service.id
+                    copy_monitoring[id].nil? ? copy_monitoring[id] = [service_engineer.id] : copy_monitoring[id] << service_engineer.id
                 end
                 
                 recursion_monitoring_engineers(hours, index + 1, id, data, copy_monitoring, results)
@@ -94,10 +99,20 @@ class MonitoringEngineersService
         # We get all the service_engineer's ids grouped by engineer_ids, 
         #   giving us the best option per service
         service_engineer_ids = reduce_engineer_combinations(shift_combination)
+        service_ids = []
+        
+        # Updates the Service::Engineer by the engineer_id key in hash, we save the services affected in an array
+        service_engineer_ids.each do |key, values|
+            service_engineers = Service::Engineer.includes(:service).where(id: values)
+            
+            service_engineers.each { |service_engineer| service_engineer.service.update!(engineer_id: key) }
+            service_ids << service_engineers.pluck(:service_id)
+        end
+        
         # We get the service's ids associated to the company into the range of the date, we are going to
-        #   set the engineer(engineer_id) to nil of those services not associated to the current Service::Engineer
-        services_ids = company.services.by_range(date.beginning_of_day, date.end_of_week.end_of_day).pluck(:id)
-        service_engineers = Service::Engineer.where(id: service_engineer_ids.values.flatten)
+        #   set the engineer(engineer_id) to nil of those services not monitored
+        company.services.by_range(date.beginning_of_day, date.end_of_week.end_of_day).where.not(id: service_ids)
+                        .update_all(engineer_id: nil)
     end
     
     def shift_combination
