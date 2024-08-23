@@ -1,0 +1,20 @@
+<div data-controller="select-option">
+  <select id="company-select" name="company" class="mt-1 block w-4/12 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          data-action="change->select-option#renderContentById">
+    <% @companies.each do |company| %>
+      <option value="<%= company.id %>" data-action="change->select-option#renderContentById" 
+                                        data-ajax-url="<%= services_path %>"
+                                        data-ajax-params='{"company_id": "<%= company.id %>"}'>
+        <%= company.name %>
+      </option>
+    <% end %>
+  </select>
+  
+  <div data-select-option-target="content">
+    <%= render partial: "services/index/service_schedule", locals: { company:           @company, 
+                                                                     week:              @week,
+                                                                     weeks:             @weeks,
+                                                                     company_schedules: @company_schedules, 
+                                                                     company_services:  @company_services } %>
+  </div>
+</div>
