@@ -19,15 +19,15 @@ class CompaniesController < ApplicationController
             service = find_service
             
             if service.nil?
-                service = company.service.new(monitoring_shift: monitoring_shift)
+                service = company.services.new(monitoring_shift: monitoring_shift)
                 
-                unless service.save
+                unless service.save!
                     flash[:alert] = "No se pudo asociar el Servicio."
                     redirect_to services_path 
                 end
             end
             
-            service.service_engineers.create!(engineer_id: engineer_id)
+            service.reload.service_engineers.create!(engineer_id: engineer_id)
         end
         
         respond_to do |format|

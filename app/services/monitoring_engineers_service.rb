@@ -1,5 +1,5 @@
 class MonitoringEngineersService
-    def self.call(company_id, date = "08-19-2024")
+    def self.call(company_id, date)
         new.call(company_id, date)
     end
 

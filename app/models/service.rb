@@ -3,7 +3,7 @@ class Service < ApplicationRecord
     has_many :engineers, through: :service_engineers
     
     belongs_to :company, class_name: "Company", inverse_of: :services, foreign_key: :company_id
-    belongs_to :engineer, class_name: "::Engineer", inverse_of: :monitoring, foreign_key: :engineer_id
+    belongs_to :engineer, class_name: "::Engineer", inverse_of: :monitoring, foreign_key: :engineer_id, optional: true
     
     scope :by_range, -> (from, to) { where("datetime(services.monitoring_shift, 'unixepoch') BETWEEN ? AND ?", from, to) }
     
