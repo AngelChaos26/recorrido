@@ -5,7 +5,7 @@ class Company < ApplicationRecord
 
   after_create :call_company_schedule_service
 
-  validates :name, uniqueness: true
+  validates :name, uniqueness: true, presence: true
 
   def schedules_by_week_number
     schedules.group_by(&:week_number)
@@ -18,6 +18,6 @@ class Company < ApplicationRecord
   private
 
   def call_company_schedule_service
-    CompanySchedulesJob.perform_now(id)
+    CompanySchedulesJob.perform_later(id)
   end
 end

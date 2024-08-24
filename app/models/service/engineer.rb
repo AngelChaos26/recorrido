@@ -11,6 +11,6 @@ class Service::Engineer < ApplicationRecord
   private
 
   def call_monitoring_engineer_service
-    MonitoringEngineersJob.perform_now(service_id)
+    MonitoringEngineersJob.perform_later(service_id)
   end
 end
