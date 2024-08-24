@@ -12,10 +12,11 @@
   </select>
   
   <div data-select-option-target="content">
-    <%= render partial: "services/index/service_schedule", locals: { company:           @company, 
-                                                                     week:              @week,
-                                                                     weeks:             @weeks,
-                                                                     company_schedules: @company_schedules, 
-                                                                     company_services:  @company_services } %>
+    <%= render partial: "services/index/service_schedule", locals: { company:                 @company, 
+                                                                     week:                    @week,
+                                                                     weeks:                   @weeks,
+                                                                     company_schedules:       @company_schedules, 
+                                                                     company_services:        @company_services,
+                                                                     engineer_total_services: @engineer_total_services} %>
   </div>
 </div>

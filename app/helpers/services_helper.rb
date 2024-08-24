@@ -2,6 +2,38 @@
 module ServicesHelper
   include WeekFormatHelpers
 
+  def render_engineer_table(engineer_total_services)
+    content_tag(:table,
+                class: 'min-w-full text-start text-sm font-light text-surface dark:text-white') do
+      concat content_tag(:caption, '', class: 'caption-top')
+      concat(
+        content_tag(:thead,
+                    class: 'border-b border-neutral-200 font-medium dark:border-white/10') do
+          content_tag(:tr) do
+            concat content_tag(:th, 'Ingenieros', class: 'px-6 py-4')
+          end
+        end
+      )
+      concat(
+        content_tag(:tbody) do
+          engineer_total_services.each do |key, value|
+            next if key.nil?
+
+            concat(
+              content_tag(:tr,
+                          class: 'border-b border-neutral-200 dark:border-white/10') do
+                concat content_tag(:td, engineers_by_id[key][0].full_name,
+                                   class: 'whitespace-nowrap px-6 py-4 bg-cyan-200')
+                concat content_tag(:td, value.count,
+                                   class: 'whitespace-nowrap px-6 py-4 font-medium')
+              end
+            )
+          end
+        end
+      )
+    end
+  end
+
   def render_schedule_table(company, day, company_schedules, company_services)
     content_tag(:table,
                 class: 'min-w-full text-start text-sm font-light text-surface dark:text-white') do
@@ -30,6 +62,10 @@ module ServicesHelper
         end
       )
     end
+  end
+
+  def engineers_by_id
+    @engineers_by_id ||= Engineer.all.group_by(&:id)
   end
 
   def assigned_engineer(services, hour, week)

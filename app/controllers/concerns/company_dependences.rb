@@ -6,6 +6,11 @@ module CompanyDependences
     @company_schedules ||= company.schedules_by_week_number
   end
 
+  def services_by_range
+    @services_by_range ||= company.services.by_range(week.beginning_of_day,
+                                                     week.end_of_week.end_of_day)
+  end
+
   def company_services
     @company_services ||= begin
       services_by_day = company.services

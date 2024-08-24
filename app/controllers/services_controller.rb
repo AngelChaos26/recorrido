@@ -7,6 +7,7 @@ class ServicesController < ApplicationController
     company
     company_schedules
     company_services
+    engineer_total_services
     week
     weeks
 
@@ -21,7 +22,7 @@ class ServicesController < ApplicationController
   def build_service_schedule
     render_to_string(partial: 'services/index/service_schedule',
                      locals: { company:, week:, weeks:, company_schedules:,
-                               company_services: },
+                               company_services:, engineer_total_services: },
                      layout: false, formats: :html)
   end
 
@@ -33,6 +34,10 @@ class ServicesController < ApplicationController
 
   def company
     @company ||= company_id.zero? ? companies.first : companies.find_by(id: company_id)
+  end
+
+  def engineer_total_services
+    @engineer_total_services ||= services_by_range.group_by(&:engineer_id)
   end
 
   def company_id
