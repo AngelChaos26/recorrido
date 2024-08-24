@@ -14,7 +14,7 @@ Cree la base de datos tanto de `development` como de `test`, tome en cuenta que 
 
 Una vez creadas, corra el archivo `seed`
 
-```ruby
+```shell
 bundle exec rails db:seed
 ```
 Se deberia de llenar la aplicacion con la informacion necesaria para empezar, antes de correr la aplicacion, ejecute el siguiente comando la consola de ruby para correr el `servicio`:
@@ -22,6 +22,16 @@ Se deberia de llenar la aplicacion con la informacion necesaria para empezar, an
 ```ruby
 MonitoringEngineersService.call(Company.first, Date.current.beginning_of_week.strftime("%m-%d-%Y"))
 ```
-La aplicacion fur implementada usando las siguientes tecnologias
+La aplicacion fur implementada usando las siguientes tecnologias:
+
+* `Tailwind`
+* `Stimulus.js`
+* `rubocop`
+* `Rspec`
+* `FactoryBot`
+* `Faker`
+
+Cualquier duda favor de contactarme!!!
+
 
 
