@@ -1,24 +1,27 @@
-# README
+Recorrido
+=====================
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Esto es el proyecto como parte del proceso de seleccion, los comentarios y procesos estan establecidos en Ingles.
 
-Things you may want to cover:
+Instalacion
+------------
 
-* Ruby version
+Al descargar la aplicacion, siga los siguientes pasos:
 
-* System dependencies
+Correr `bundle install`.
 
-* Configuration
+Cree la base de datos tanto de `development` como de `test`, tome en cuenta que estas base de datos fueron creadas en `sqlite3`.
 
-* Database creation
+Una vez creadas, corra el archivo `seed`
 
-* Database initialization
+```ruby
+bundle exec rails db:seed
+```
+Se deberia de llenar la aplicacion con la informacion necesaria para empezar, antes de correr la aplicacion, ejecute el siguiente comando la consola de ruby para correr el `servicio`:
 
-* How to run the test suite
+```ruby
+MonitoringEngineersService.call(Company.first, Date.current.beginning_of_week.strftime("%m-%d-%Y"))
+```
+La aplicacion fur implementada usando las siguientes tecnologias
 
-* Services (job queues, cache servers, search engines, etc.)
 
-* Deployment instructions
-
-* ...
