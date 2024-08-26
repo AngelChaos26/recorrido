@@ -47,7 +47,7 @@ class MonitoringEngineersService
 
       # If start_index is nil, it means could be services records, but without
       #     engineers associated we finish the service
-      next if start_index.blank?
+      next if start_index.blank? || start_index.is_a?(Array)
 
       results = { results: [], min_shift: 0 }
 
@@ -71,12 +71,10 @@ class MonitoringEngineersService
   # rubocop:disable Metrics/ParameterLists
   def recursion_monitoring_engineers(hours, index, previous_id, data,
                                      monitoring, results)
-    # If the hours are finishid, we save the information if this is smaller
-    #   that the current min_shift
+    # If the hours are finished, we save the information
     if hours[index].nil?
-      if results[:min_shift].zero? || monitoring['shifts'] <= results[:min_shift]
-        results[:results] << monitoring
-      end
+       results[:results] << monitoring
+       
       if results[:min_shift].zero? || monitoring['shifts'] < results[:min_shift]
         results[:min_shift] =
           monitoring['shifts']
@@ -155,6 +153,7 @@ class MonitoringEngineersService
     combinations.each do |combination|
       # Initialize the hash to get the sun of the engineers
       working_hours = Hash.new(0)
+      day_shifts.keys.each { |key| working_hours[key] = 0 }
 
       # We sum all the hours for the workers based in the current combination
       combination.each do |shift|
@@ -179,8 +178,7 @@ class MonitoringEngineersService
   end
 
   def hours_to_engineers(results, min_shift, date)
-    day_shifts[date] = results.select { |result| result['shifts'] == min_shift }
-                              .map { |data| data.except('shifts') }
+    day_shifts[date] = results.map { |data| data.except('shifts') }
   end
 
   def day_shifts
