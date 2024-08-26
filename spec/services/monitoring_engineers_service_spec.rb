@@ -169,7 +169,7 @@ RSpec.describe MonitoringEngineersService, type: :service do
 
       expect(services.map do |service|
                service.engineer.first_name
-             end.uniq).to eq(%w[Benjamin Ernesto])
+             end.uniq).to eq(%w[Ernesto Benjamin])
 
       # Thuesday, full for Benjamin
       services = company.services.by_range((beginning_of_week + 1).beginning_of_day,
@@ -177,11 +177,11 @@ RSpec.describe MonitoringEngineersService, type: :service do
 
       expect(services.map do |service|
                service.engineer.first_name
-             end.uniq).to eq(%w[Ernesto Barbara])
+             end.uniq).to eq(%w[Barbara Ernesto])
 
-      expect(company.services.where(engineer_id: engineer1.id).count).to eq(4)
-      expect(company.services.where(engineer_id: engineer2.id).count).to eq(4)
-      expect(company.services.where(engineer_id: engineer3.id).count).to eq(2)
+      expect(company.services.where(engineer_id: engineer1.id).count).to eq(3)
+      expect(company.services.where(engineer_id: engineer2.id).count).to eq(3)
+      expect(company.services.where(engineer_id: engineer3.id).count).to eq(4)
     end
   end
 end

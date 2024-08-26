@@ -144,6 +144,7 @@ class MonitoringEngineersService
   def shift_combination
     # Generate all possible combinations based in the recursion result
     combinations = day_shifts.values[0].product(*day_shifts.values[1..])
+    engineer_keys = day_shifts.values.flatten.map(&:keys).flatten.uniq
 
     best_combination = nil
     minimum_difference = Float::INFINITY
@@ -151,7 +152,7 @@ class MonitoringEngineersService
     combinations.each do |combination|
       # Initialize the hash to get the sun of the engineers
       working_hours = Hash.new(0)
-      day_shifts.each_key { |key| working_hours[key] = 0 }
+      engineer_keys.each { |key| working_hours[key] = 0 }
 
       # We sum all the hours for the workers based in the current combination
       combination.each do |shift|
@@ -166,7 +167,7 @@ class MonitoringEngineersService
       difference = max_hours - min_hours
 
       # We save the combitaion if the difference is minimum
-      if difference < minimum_difference
+      if difference <= minimum_difference
         minimum_difference = difference
         best_combination = combination
       end
