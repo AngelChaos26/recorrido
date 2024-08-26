@@ -61,8 +61,7 @@ class MonitoringEngineersService
       end
 
       # We save the combinations with the minimum of shifts
-      hours_to_engineers(results[:results], results[:min_shift],
-                         week_day_format)
+      hours_to_engineers(results[:results], week_day_format)
     end
 
     assign_engineers_to_hours(company, service_date)
@@ -73,11 +72,10 @@ class MonitoringEngineersService
                                      monitoring, results)
     # If the hours are finished, we save the information
     if hours[index].nil?
-       results[:results] << monitoring
-       
+      results[:results] << monitoring
+
       if results[:min_shift].zero? || monitoring['shifts'] < results[:min_shift]
-        results[:min_shift] =
-          monitoring['shifts']
+        results[:min_shift] = monitoring['shifts']
       end
 
       return results
@@ -153,7 +151,7 @@ class MonitoringEngineersService
     combinations.each do |combination|
       # Initialize the hash to get the sun of the engineers
       working_hours = Hash.new(0)
-      day_shifts.keys.each { |key| working_hours[key] = 0 }
+      day_shifts.each_key { |key| working_hours[key] = 0 }
 
       # We sum all the hours for the workers based in the current combination
       combination.each do |shift|
@@ -177,7 +175,7 @@ class MonitoringEngineersService
     best_combination
   end
 
-  def hours_to_engineers(results, min_shift, date)
+  def hours_to_engineers(results, date)
     day_shifts[date] = results.map { |data| data.except('shifts') }
   end
 
